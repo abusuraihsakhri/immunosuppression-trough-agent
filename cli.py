@@ -4,12 +4,34 @@ Command Line Interface for Immunosuppression Trough Agent.
 import argparse
 import csv
 import json
+import os
 import sys
+from pathlib import Path
 from agents.models import SystemTaskPayload
 from agents.supervisor import SystemSupervisor
 from agents.base import AuditLogger
 
 supervisor = SystemSupervisor(model_provider="mock")
+
+
+def _validate_file_path(path: str, must_exist: bool = False) -> str:
+    """Validate file path for safety - prevents path traversal attacks."""
+    # Normalize the path
+    normalized = os.path.normpath(path)
+
+    # Check for path traversal attempts
+    if normalized.startswith("..") or "/.." in normalized or "\\.." in normalized:
+        raise ValueError(f"Path traversal detected in path: {path}")
+
+    # Check for absolute paths that might be dangerous
+    if os.path.isabs(normalized):
+        # Allow absolute paths but log warning - in production you might want to restrict
+        pass
+
+    if must_exist and not os.path.isfile(normalized):
+        raise FileNotFoundError(f"Input file not found: {path}")
+
+    return normalized
 
 
 def main(argv=None):
@@ -45,15 +67,19 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     if args.command == "audit":
-        payload = SystemTaskPayload(
-            task_id=args.task_id,
-            target_identifier=args.target,
-            primary_metric=args.primary,
-            secondary_metric=args.secondary,
-            status_descriptor=args.status,
-            is_critical_flag=args.critical,
-        )
-        dossier = supervisor.process_task(payload)
+        try:
+            payload = SystemTaskPayload(
+                task_id=args.task_id,
+                target_identifier=args.target,
+                primary_metric=args.primary,
+                secondary_metric=args.secondary,
+                status_descriptor=args.status,
+                is_critical_flag=args.critical,
+            )
+            dossier = supervisor.process_task(payload)
+        except Exception as e:
+            print(f"Error processing task: {e}", file=sys.stderr)
+            return 1
         print("=" * 80)
         print(f"  IMMUNOSUPPRESSION TROUGH AGENT")
         print(f"  Domain: Clinical Pharmacology & Pharmacogenomics | Standard: CPIC Level A / FDA Guidance / ISMP Safety Standards")
@@ -80,34 +106,53 @@ def main(argv=None):
         return 0
 
     if args.command == "batch":
-        with open(args.input, mode="r", encoding="utf-8-sig") as f:
-            reader = csv.DictReader(f)
-            fieldnames = list(reader.fieldnames or [])
-            rows = list(reader)
+        try:
+            input_path = _validate_file_path(args.input, must_exist=True)
+            output_path = _validate_file_path(args.output, must_exist=False)
+        except (ValueError, FileNotFoundError) as e:
+            print(f"Error: {e}", file=sys.stderr)
+            return 1
+
+        try:
+            with open(input_path, mode="r", encoding="utf-8-sig") as f:
+                reader = csv.DictReader(f)
+                fieldnames = list(reader.fieldnames or [])
+                rows = list(reader)
+        except (csv.Error, UnicodeDecodeError) as e:
+            print(f"Error reading CSV file: {e}", file=sys.stderr)
+            return 1
 
         out_fields = fieldnames + ["overall_urgency", "integrity_status", "total_alerts", "audit_hash"]
         out_rows = []
         for r in rows:
-            payload = SystemTaskPayload(
-                task_id=r.get("task_id", "TASK-01"),
-                target_identifier=r.get("target_identifier", "TARGET-01"),
-                primary_metric=float(r.get("primary_metric", 15.0)),
-                secondary_metric=float(r.get("secondary_metric", 5.0)),
-                status_descriptor=r.get("status_descriptor", "NOMINAL"),
-                is_critical_flag=bool(r.get("is_critical_flag", False)),
-            )
-            dossier = supervisor.process_task(payload)
-            row_dict = dict(r)
-            row_dict["overall_urgency"] = dossier.overall_urgency.value
-            row_dict["integrity_status"] = dossier.integrity_status.value
-            row_dict["total_alerts"] = dossier.total_alerts
-            row_dict["audit_hash"] = dossier.audit_hash
-            out_rows.append(row_dict)
+            try:
+                payload = SystemTaskPayload(
+                    task_id=r.get("task_id", "TASK-01"),
+                    target_identifier=r.get("target_identifier", "TARGET-01"),
+                    primary_metric=float(r.get("primary_metric", 15.0)),
+                    secondary_metric=float(r.get("secondary_metric", 5.0)),
+                    status_descriptor=r.get("status_descriptor", "NOMINAL"),
+                    is_critical_flag=bool(r.get("is_critical_flag", False)),
+                )
+                dossier = supervisor.process_task(payload)
+                row_dict = dict(r)
+                row_dict["overall_urgency"] = dossier.overall_urgency.value
+                row_dict["integrity_status"] = dossier.integrity_status.value
+                row_dict["total_alerts"] = dossier.total_alerts
+                row_dict["audit_hash"] = dossier.audit_hash
+                out_rows.append(row_dict)
+            except (ValueError, KeyError) as e:
+                print(f"Warning: Skipping malformed row: {e}", file=sys.stderr)
+                continue
 
-        with open(args.output, mode="w", encoding="utf-8", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=out_fields)
-            writer.writeheader()
-            writer.writerows(out_rows)
+        try:
+            with open(output_path, mode="w", encoding="utf-8", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=out_fields)
+                writer.writeheader()
+                writer.writerows(out_rows)
+        except OSError as e:
+            print(f"Error writing output file: {e}", file=sys.stderr)
+            return 1
         print(f"Processed {len(out_rows)} records -> {args.output}")
         return 0
 
