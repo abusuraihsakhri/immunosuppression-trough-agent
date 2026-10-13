@@ -63,3 +63,9 @@ def test_transplant_legacy_aliases():
     })
     assert out["critical_count"] == 0
     assert out["total_alerts"] == 1
+
+def test_simulator_rejects_invalid_iterations():
+    from simulator import run_simulation
+    for n in (0, -1):
+        with pytest.raises(ValueError):
+            run_simulation(n)
