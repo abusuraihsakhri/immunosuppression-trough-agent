@@ -1,4 +1,4 @@
-name: Immunosuppression Trough Engine CI/CD & Security Verification
+name: Immunosuppression Trough Engine Tests
 
 on:
   push:
@@ -38,11 +38,11 @@ jobs:
     - name: Browser module regression tests
       run: node --test web/app.test.mjs
 
-    - name: Security integrity regression check
+    - name: In-memory audit integrity smoke test
       run: |
         python -c "
         from agents.base import PHIGuard, AuditLogger
         import pytest
         assert AuditLogger.verify_integrity() is True
-        print('Security & Zero-PHI Audit Passed!')
+        print('In-memory audit initialization check passed')
         "
