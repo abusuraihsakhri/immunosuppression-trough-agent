@@ -1,9 +1,10 @@
 """
 Clinical Data Models & Enums for TransplantTDM Sentinel: Tacrolimus, Cyclosporine & Everolimus Trough Agent.
 Domain: Transplant Medicine
-Standard: ISHLT / AST Immunosuppression TDM Standards
+Standard: Unvalidated demonstration thresholds
 """
 import datetime
+import math
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, List, Optional, Any
@@ -34,6 +35,12 @@ class ClinicalCasePayload:
     biomarkers: Dict[str, Any] = field(default_factory=dict)
     timestamp: str = field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc).isoformat())
 
+    def __post_init__(self):
+        for name in ("primary_metric", "secondary_metric"):
+            value = getattr(self, name)
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0:
+                raise ValueError(f"{name} must be a finite, non-negative number")
+
 
 @dataclass
 class AgentAlert:
@@ -43,7 +50,7 @@ class AgentAlert:
     title: str
     clinical_finding: str
     actionable_recommendation: str
-    guideline_citation: str = "ISHLT / AST Immunosuppression TDM Standards"
+    guideline_citation: str = "Unvalidated demonstration thresholds"
     timestamp: str = field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc).isoformat())
 
     def to_dict(self) -> Dict[str, Any]:

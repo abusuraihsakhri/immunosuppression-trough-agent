@@ -1,4 +1,4 @@
-name: Immunosuppression Trough Engine CI/CD & Security Verification
+name: Immunosuppression Trough Engine Tests
 
 on:
   push:
@@ -24,17 +24,25 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install fastapi uvicorn pydantic pytest
+        pip install -e ".[api,dev]"
 
     - name: Run Pytest Suite
       run: |
         pytest -v
 
-    - name: Security SAST & Zero-PHI Audit
+    - name: Validate source and installed CLI
+      run: |
+        python -m compileall -q agents immunosuppression_trough_agent cli.py transplant_tdm.py
+        immunosuppression-trough-agent audit --task-id CI-001 --primary 1 --secondary 1
+
+    - name: Browser module regression tests
+      run: node --test web/app.test.mjs
+
+    - name: In-memory audit integrity smoke test
       run: |
         python -c "
         from agents.base import PHIGuard, AuditLogger
         import pytest
         assert AuditLogger.verify_integrity() is True
-        print('Security & Zero-PHI Audit Passed!')
+        print('In-memory audit initialization check passed')
         "

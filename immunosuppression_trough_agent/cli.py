@@ -11,6 +11,15 @@ from .agents import TransplantTDMCoordinator
 coordinator = TransplantTDMCoordinator()
 
 
+def _parse_bool(value):
+    token = str(value if value is not None else "").strip().lower()
+    if token in ("1", "true", "yes", "y"):
+        return True
+    if token in ("0", "false", "no", "n", ""):
+        return False
+    raise ValueError(f"Invalid boolean value: {value!r}")
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="immunosuppression-trough-agent", description="TransplantTDM Sentinel: Tacrolimus, Cyclosporine & Everolimus Trough Agent")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -73,7 +82,7 @@ def main(argv=None):
             fieldnames = list(reader.fieldnames or [])
             rows = list(reader)
 
-        out_fields = fieldnames + ["overall_status", "total_alerts", "stat_critical_alerts", "consensus_summary"]
+        out_fields = list(dict.fromkeys(fieldnames + ["overall_status", "total_alerts", "stat_critical_alerts", "consensus_summary"]))
         out_rows = []
         for r in rows:
             case = ClinicalCasePayload(
@@ -82,7 +91,7 @@ def main(argv=None):
                 primary_metric=float(r.get("metric_primary", r.get("primary_metric", 15.0))),
                 secondary_metric=float(r.get("metric_secondary", r.get("secondary_metric", 5.0))),
                 status_flag=r.get("status_flag", r.get("status_text", "NORMAL")),
-                is_stat=bool(r.get("is_stat", r.get("critical_flag", False))),
+                is_stat=_parse_bool(r.get("is_stat", r.get("critical_flag", False))),
             )
             dossier = coordinator.process_case(case)
             row_dict = dict(r)

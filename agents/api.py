@@ -23,7 +23,7 @@ class ChatRequest(BaseModel):
 
 @app.get("/health")
 def health():
-    return {"status": "HEALTHY", "service": "immunosuppression-trough-agent", "domain": "Clinical Pharmacology & Pharmacogenomics", "standard": "CPIC Level A / FDA Guidance / ISMP Safety Standards", "version": "3.0.0-ENTERPRISE"}
+    return {"status": "HEALTHY", "service": "immunosuppression-trough-agent", "domain": "Clinical Pharmacology & Pharmacogenomics", "standard": "Unvalidated demonstration thresholds", "version": "3.0.0-ENTERPRISE"}
 
 
 @app.get("/metrics")

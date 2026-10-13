@@ -1,236 +1,72 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Immunosuppression Trough Engine — Operations Console</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #090d16;
-            --card: #111827;
-            --border: #1f293d;
-            --accent: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.25);
-            --text: #f3f4f6;
-            --text-muted: #9ca3af;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --success: #10b981;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            padding: 2rem;
-            min-height: 100vh;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .header-title h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
-        .header-title p { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; }
-        .badge {
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            background: var(--accent-glow);
-            color: var(--accent);
-            border: 1px solid var(--accent);
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
-            gap: 1.5rem;
-        }
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-        .card h2 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; }
-        input, select, textarea {
-            width: 100%;
-            padding: 0.65rem 0.9rem;
-            background: #0d1322;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: #fff;
-            font-family: inherit;
-            font-size: 0.9rem;
-        }
-        input:focus, textarea:focus { outline: none; border-color: var(--accent); }
-        .btn {
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            padding: 0.7rem 1.4rem;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            width: 100%;
-        }
-        .btn:hover { background: #2563eb; }
-        .terminal {
-            background: #060911;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            color: #10b981;
-            height: 380px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-        }
-        .metrics-bar {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        .metric-box {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            text-align: center;
-        }
-        .metric-val { font-size: 1.4rem; font-weight: 700; color: #fff; margin-top: 0.25rem; }
-        .metric-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+  <title>Immunosuppression Trough Agent | Rule Demonstration</title>
+  <style>
+    :root {font-family:system-ui,-apple-system,Segoe UI,sans-serif;color-scheme:dark;background:#0c1421;color:#ecf3fa}
+    * {box-sizing:border-box}
+    body {max-width:1060px;margin:0 auto;padding:24px 20px 45px;line-height:1.5}
+    h1 {font-size:clamp(1.4rem,3vw,2rem);line-height:1.2;margin:0 0 8px}
+    h2 {font-size:1.14rem;margin:0 0 18px}
+    p {margin:8px 0}
+    .lead,.muted,small {color:#b4c4d4}
+    .warning {border-left:4px solid #f6bb6f;background:#251f1b;padding:12px 16px;border-radius:6px;margin:20px 0}
+    .grid {display:grid;grid-template-columns:minmax(280px,1fr) minmax(280px,1.15fr);gap:18px;align-items:start}
+    .card {background:#142234;border:1px solid #33475e;border-radius:12px;padding:22px;min-width:0}
+    label {display:block;margin:0 0 12px;font-size:.92rem;font-weight:600}
+    input {display:block;margin:5px 0 0;width:100%;font:inherit;padding:10px;border-radius:7px;border:1px solid #6b8099;background:#091827;color:#fff}
+    input:focus-visible,button:focus-visible {outline:3px solid #94caff;outline-offset:3px}
+    label.checkbox {display:flex;align-items:center;gap:9px;margin:15px 0}
+    .checkbox input {margin:0;width:18px;height:18px;flex:none}
+    .actions {display:flex;flex-wrap:wrap;gap:9px}
+    button {cursor:pointer;border-radius:7px;padding:11px 14px;border:1px solid #79adfc;background:#3574cc;color:#fff;font:inherit;font-weight:600}
+    button.secondary {background:transparent;border-color:#71859b}
+    button:disabled {cursor:not-allowed;opacity:.5}
+    pre {overflow:auto;max-height:420px;min-height:155px;white-space:pre-wrap;overflow-wrap:anywhere;background:#081522;border:1px solid #34485e;border-radius:8px;padding:16px;color:#c6f1da;font-size:.81rem}
+    .result {font-weight:700;font-size:1.06rem;margin-bottom:10px}
+    .error {color:#ffc1b7}
+    footer {color:#aec0d1;font-size:.83rem;margin-top:22px}
+    @media (max-width:740px) {.grid{grid-template-columns:1fr}body{padding:16px}.card{padding:17px}}
+  </style>
 </head>
 <body>
-
-    <div class="header">
-        <div class="header-title">
-            <h1>Immunosuppression Trough Engine</h1>
-            <p>Domain: Clinical & Cryptographic AI | Standard: CAP / CLSI / NIST Standards | LabMind-Atlas Architecture</p>
+  <header>
+    <h1>Immunosuppression Trough Agent</h1>
+    <p class="lead">Offline rule demonstration • synthetic identifiers only • no installation required</p>
+  </header>
+  <div class="warning" role="note"><strong>Not a clinical decision tool.</strong> The thresholds below are generic prototype values, <em>not</em> validated tacrolimus, cyclosporine, or everolimus therapeutic targets. Do not use results to assess patients, adjust doses, or trigger clinical escalation. Do not enter patient information.</div>
+  <main class="grid">
+    <section class="card" aria-labelledby="input-title">
+      <h2 id="input-title">Demonstration inputs</h2>
+      <form id="audit-form">
+        <label for="task">Synthetic task ID<input id="task" name="task" type="text" maxlength="80" pattern="[A-Za-z0-9._-]+" value="DEMO-001" required autocomplete="off"></label>
+        <label for="target">Synthetic target ID<input id="target" name="target" type="text" maxlength="80" pattern="[A-Za-z0-9._-]+" value="SPECIMEN-01" required autocomplete="off"></label>
+        <label for="primary">Primary metric (unitless demonstration)<input id="primary" name="primary" type="number" min="0" step="any" value="29.4" required></label>
+        <label for="secondary">Secondary metric (unitless demonstration)<input id="secondary" name="secondary" type="number" min="0" step="any" value="14.8" required></label>
+        <label for="status">Status descriptor<input id="status" name="status" maxlength="100" value="DISCORDANT_ANOMALY" required autocomplete="off"></label>
+        <label class="checkbox" for="critical"><input id="critical" name="critical" type="checkbox">Manually mark as critical</label>
+        <div class="actions">
+          <button type="submit">Evaluate rules</button>
+          <button type="reset" class="secondary">Reset</button>
         </div>
-        <div>
-            <span class="badge">Air-Gapped Active</span>
-            <span class="badge" style="background: rgba(16,185,129,0.2); color: #10b981; border-color: #10b981;">Zero-PHI Guard Active</span>
-        </div>
-    </div>
-
-    <div class="metrics-bar">
-        <div class="metric-box">
-            <div class="metric-label">System Status</div>
-            <div class="metric-val" style="color: var(--success);" id="m-status">OPTIMAL</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">Tasks Processed</div>
-            <div class="metric-val" id="m-tasks">142</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">Audit Blocks Signed</div>
-            <div class="metric-val" id="m-audit">142</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">PHI Interceptions</div>
-            <div class="metric-val" style="color: var(--accent);" id="m-phi">0</div>
-        </div>
-    </div>
-
-    <div class="grid">
-        <div class="card">
-            <h2>⚙️ Dispatch Distributed Component Audit</h2>
-            <div class="form-group">
-                <label>Task / Sample ID</label>
-                <input type="text" id="task_id" value="TASK-2026-LIVE-01">
-            </div>
-            <div class="form-group">
-                <label>Target Identifier</label>
-                <input type="text" id="target_id" value="SPECIMEN-ALPHA-77">
-            </div>
-            <div class="form-group">
-                <label>Primary Measurement / Value</label>
-                <input type="number" id="primary_metric" value="29.4" step="0.1">
-            </div>
-            <div class="form-group">
-                <label>Secondary Metric / Kinetic Index</label>
-                <input type="number" id="secondary_metric" value="14.8" step="0.1">
-            </div>
-            <div class="form-group">
-                <label>Status / Phenotype Descriptor</label>
-                <input type="text" id="status_descriptor" value="DISCORDANT_ANOMALY">
-            </div>
-            <div class="form-group">
-                <label><input type="checkbox" id="is_critical" checked> Trigger Emergency / Critical Flag</label>
-            </div>
-            <button class="btn" onclick="runAudit()">Execute Distributed Component Audit</button>
-        </div>
-
-        <div class="card">
-            <h2>📊 Real-Time Consensus Dossier & Audit Log</h2>
-            <div class="terminal" id="outputConsole">// Immunosuppression Trough Engine Operations Console Ready
-// Connection established with Air-Gapped Supervisor
-// Cryptographic HMAC-SHA256 audit ledger loaded.
-// Ready for live task payload dispatch...</div>
-        </div>
-    </div>
-
-    <script>
-        async function runAudit() {
-            const consoleEl = document.getElementById('outputConsole');
-            consoleEl.innerText = "// Dispatching task across specialized workers...
-// Invoking InvariantQCWorker, SafetyEscalationWorker, ProtocolWorker...";
-
-            const payload = {
-                task_id: document.getElementById('task_id').value,
-                target_identifier: document.getElementById('target_id').value,
-                primary_metric: parseFloat(document.getElementById('primary_metric').value),
-                secondary_metric: parseFloat(document.getElementById('secondary_metric').value),
-                status_descriptor: document.getElementById('status_descriptor').value,
-                is_critical_flag: document.getElementById('is_critical').checked
-            };
-
-            try {
-                const res = await fetch('/api/audit', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                consoleEl.innerText = JSON.stringify(data, null, 2);
-                document.getElementById('m-tasks').innerText = parseInt(document.getElementById('m-tasks').innerText) + 1;
-                document.getElementById('m-audit').innerText = parseInt(document.getElementById('m-audit').innerText) + 1;
-            } catch (err) {
-                consoleEl.innerText = "// Offline / Simulation Output:\n" + JSON.stringify({
-                    dossier_id: "DOSSIER-SIM-" + Math.floor(Math.random()*10000),
-                    system: "immunosuppression-trough-engine",
-                    domain: "Clinical & Cryptographic AI",
-                    task_id: payload.task_id,
-                    overall_urgency: payload.is_critical_flag ? "CRITICAL_STAT_PANIC" : "ELEVATED_RISK",
-                    integrity_status: "DISCORDANT_ANOMALY",
-                    alerts: [
-                        { worker: "InvariantQCWorker", alert: "Primary metric exceeds upper reference bound" },
-                        { worker: "SafetyEscalationWorker", alert: "Critical emergency interlock flag active" }
-                    ],
-                    audit_hash: "HMAC_SHA256_e83f9a72b941d6c381f9"
-                }, null, 2);
-            }
-        }
-    </script>
+      </form>
+    </section>
+    <section class="card" aria-labelledby="output-title">
+      <h2 id="output-title">Local evaluation</h2>
+      <p class="muted">Rules: primary &gt;25; secondary &gt;12; critical flag; selected status keywords. These are not drug concentration limits.</p>
+      <p id="summary" class="result" role="status" aria-live="polite">No evaluation yet.</p>
+      <pre id="report" aria-label="Evaluation report">Complete the form and select Evaluate rules.</pre>
+      <div class="actions">
+        <button id="download" type="button" class="secondary" disabled>Download JSON</button>
+      </div>
+    </section>
+  </main>
+  <footer>This page runs entirely in your browser. No network requests, clinical records, server-side audit ledger, or persistent storage. The Python API and CLI are separate components.</footer>
+  <script type="module" src="./app.mjs"></script>
 </body>
 </html>

@@ -3,6 +3,7 @@ Supervisor Orchestrator & Operations Intelligence for Immunosuppression Trough A
 Domain: Clinical Pharmacology & Pharmacogenomics
 """
 import uuid
+import json
 from typing import Dict, Any, List, Optional
 from .base import AuditLogger, ActionExecutor, PHIGuard
 from .models import SystemTaskPayload, AgentAlert, ConsensusDossier, UrgencyLevel, SystemIntegrityStatus
@@ -25,6 +26,7 @@ class SystemSupervisor:
         PHIGuard.assert_no_phi(payload.task_id)
         PHIGuard.assert_no_phi(payload.target_identifier)
         PHIGuard.assert_no_phi(payload.status_descriptor)
+        PHIGuard.assert_no_phi(json.dumps(payload.attributes, default=str))
 
         # Multi-worker evaluations
         all_alerts: List[AgentAlert] = []
@@ -75,5 +77,5 @@ class SystemSupervisor:
 
     def query_supervisory_chat(self, query: str) -> str:
         PHIGuard.assert_no_phi(query)
-        prompt = f"Supervisor inquiry for Immunosuppression Trough Agent under CPIC Level A / FDA Guidance / ISMP Safety Standards: {query}"
+        prompt = f"Supervisor inquiry for Immunosuppression Trough Agent (demonstration mode; no validated dosing recommendations): {query}"
         return self.llm.invoke(prompt)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 TransplantTDM Sentinel: Tacrolimus, Cyclosporine & Everolimus Trough Agent
-Maintains target whole-blood immunosuppressant trough windows (ng/mL) post-transplant, auditing CYP3A5 genotypes and drug interactions.
+Demonstrates generic thresholds on unitless metrics; does not calculate drug-specific targets or doses.
 
 Domain: Transplant Medicine
 Author: Dr. Abu Suraih Sakhri
@@ -12,9 +12,22 @@ import argparse
 import csv
 import datetime
 import json
+import math
 import sys
 import uuid
 from typing import Dict, Any, List, Optional
+
+
+def parse_boolean(value):
+    """Read boolean flags from JSON or CSV without coercing 'False' to True."""
+    if isinstance(value, bool):
+        return value
+    token = str(value if value is not None else "").strip().lower()
+    if token in ("1", "true", "yes", "y"):
+        return True
+    if token in ("0", "false", "no", "n", ""):
+        return False
+    raise ValueError(f"Invalid boolean value: {value!r}")
 
 
 class Severity(str):
@@ -32,15 +45,15 @@ class Severity(str):
 class DomainKnowledgeRegistry:
     """Enterprise domain rules, guideline matrices, and evidence benchmarks."""
     SYSTEM_VERSION = "2.0.0-PRO-CLINICAL"
-    ZERO_PHI_COMPLIANCE = True
-    HIPAA_SAFE_HARBOR = "ACTIVE_ON_PREMISES"
+    ZERO_PHI_COMPLIANCE = False
+    HIPAA_SAFE_HARBOR = "NOT_ASSESSED"
 
     @staticmethod
     def audit_security_and_integrity(payload: Dict[str, Any]) -> List[str]:
         warnings = []
         for key in payload.keys():
             if any(phi_keyword in key.lower() for phi_keyword in ["patient_name", "ssn", "mrn_raw", "dob_raw"]):
-                warnings.append(f"PHI_DEFENSE_TRIGGERED: Direct identifier '{key}' masked to synthetic token.")
+                warnings.append(f"PHI_DEFENSE_TRIGGERED: Direct identifier field '{key}' detected; no masking was performed.")
         return warnings
 
 class AgentAlert:
@@ -77,7 +90,7 @@ class TroughTargetWindowAuditorAgent:
                     agent_name="TroughTargetWindowAuditorAgent",
                     severity=Severity.WARNING,
                     title="Primary Metric Threshold Discrepancy",
-                    details=f"Primary metric value ({val1:.1f}) exceeded standard clinical baseline.",
+                    details=f"Primary metric value ({val1:.1f}) exceeded the demonstration threshold.",
                     recommendation="Perform secondary cross-check and review calibration profile.",
                 )
             )
@@ -88,7 +101,7 @@ class CYP3A5GenotypeModifierAgent:
     """Specialized Sub-Agent 2 for immunosuppression-trough-agent"""
     def evaluate(self, payload: Dict[str, Any]) -> List[AgentAlert]:
         alerts = []
-        is_critical = bool(payload.get("critical_flag", False))
+        is_critical = parse_boolean(payload.get("critical_flag", payload.get("is_stat", False)))
         val2 = float(payload.get("metric_secondary", 5.0))
         if is_critical or val2 > 12.0:
             alerts.append(
@@ -98,7 +111,7 @@ class CYP3A5GenotypeModifierAgent:
                     severity=Severity.CRITICAL,
                     title="Urgent Consensus Protocol Trigger",
                     details=f"Secondary parameter index ({val2:.1f}) triggered automated supervisory escalation.",
-                    recommendation="Initiate mandatory closed-loop clinical notification protocol.",
+                    recommendation="No clinical action is implied by this demonstration threshold.",
                 )
             )
         return alerts
@@ -108,7 +121,7 @@ class DoseTitrationCalculatorAgent:
     """Specialized Sub-Agent 3 for immunosuppression-trough-agent"""
     def evaluate(self, payload: Dict[str, Any]) -> List[AgentAlert]:
         alerts = []
-        status_text = str(payload.get("status_text", "NORMAL")).upper()
+        status_text = str(payload.get("status_text", payload.get("status_flag", "NORMAL"))).upper()
         if "DISCORDANT" in status_text or "SUSPICIOUS" in status_text:
             alerts.append(
                 AgentAlert(
@@ -132,6 +145,10 @@ class TransplantTDMCoordinator:
         self.case_registry: Dict[str, Dict[str, Any]] = {}
 
     def audit_case(self, case_payload: Dict[str, Any]) -> Dict[str, Any]:
+        for key, default in (("metric_primary", 15.0), ("metric_secondary", 5.0)):
+            number = float(case_payload.get(key, default))
+            if not math.isfinite(number) or number < 0:
+                raise ValueError(f"{key} must be finite and non-negative")
         case_id = str(case_payload.get("case_id", f"CASE-{uuid.uuid4().hex[:6].upper()}"))
         all_alerts: List[AgentAlert] = []
 
@@ -142,7 +159,7 @@ class TransplantTDMCoordinator:
         critical_count = sum(1 for a in all_alerts if a.severity == Severity.CRITICAL)
         warning_count = sum(1 for a in all_alerts if a.severity == Severity.WARNING)
 
-        overall_status = "CRITICAL_ACTION_REQUIRED" if critical_count > 0 else ("WARNING_ACTIVE" if warning_count > 0 else "CONCORDANT_NORMAL")
+        overall_status = "CRITICAL_ACTION_REQUIRED" if critical_count > 0 else ("WARNING_ACTIVE" if warning_count > 0 else "ADVISORY_ACTIVE" if all_alerts else "CONCORDANT_NORMAL")
 
         dossier = {
             "system": "immunosuppression-trough-agent",
@@ -165,7 +182,7 @@ class TransplantTDMCoordinator:
         if "summary" in q or "status" in q:
             return f"TransplantTDM Sentinel: Tacrolimus, Cyclosporine & Everolimus Trough Agent currently tracking {len(self.case_registry)} cases in local air-gapped memory."
         elif "guidelines" in q or "protocol" in q:
-            return "All sub-agents operate under validated consensus clinical algorithms and CAP/CLSI/NCCN/WHO standards."
+            return "No validated guidelines are implemented: this prototype uses demonstration thresholds, not drug-specific therapeutic ranges."
         else:
             return f"TransplantTDM Sentinel: Tacrolimus, Cyclosporine & Everolimus Trough Agent executive agent online. Continuous supervisory monitoring active across all domain parameters."
 

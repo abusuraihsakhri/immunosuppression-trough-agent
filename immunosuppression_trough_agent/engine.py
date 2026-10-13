@@ -1,7 +1,7 @@
 """
 Clinical Algorithmic Engine & Guideline Rules for TransplantTDM Sentinel: Tacrolimus, Cyclosporine & Everolimus Trough Agent.
 Domain: Transplant Medicine
-Standard: ISHLT / AST Immunosuppression TDM Standards
+Standard: unvalidated demonstration rules
 """
 import math
 from typing import Dict, Any, List, Optional
@@ -9,7 +9,7 @@ from .models import ClinicalCasePayload, AgentAlert, UrgencyLevel, ClinicalInteg
 
 
 class ClinicalDomainEngine:
-    GUIDELINE = "ISHLT / AST Immunosuppression TDM Standards"
+    GUIDELINE = "unvalidated demonstration rules"
     PRIMARY_BASELINE_LIMIT = 20.0
     SECONDARY_ALERT_LIMIT = 10.0
 
@@ -18,8 +18,8 @@ class ClinicalDomainEngine:
         if value > cls.PRIMARY_BASELINE_LIMIT:
             return {
                 "title": "Primary Metric Threshold Exceeded",
-                "finding": f"Observed value ({value:.2f}) exceeds ISHLT / AST Immunosuppression TDM Standards clinical baseline limit ({cls.PRIMARY_BASELINE_LIMIT:.1f}).",
-                "recommendation": "Perform immediate secondary verification and calibration review.",
+                "finding": f"Observed value ({value:.2f}) exceeds unvalidated demonstration rules configured demonstration threshold ({cls.PRIMARY_BASELINE_LIMIT:.1f}).",
+                "recommendation": "Review demonstration inputs; use a validated drug-specific protocol for clinical decisions.",
             }
         return None
 
@@ -27,9 +27,9 @@ class ClinicalDomainEngine:
     def evaluate_secondary_kinetics(cls, value: float, is_stat: bool) -> Optional[Dict[str, Any]]:
         if value > cls.SECONDARY_ALERT_LIMIT or is_stat:
             return {
-                "title": "STAT Kinetic Escalation Triggered",
-                "finding": f"Kinetic parameter ({value:.2f}) with STAT={is_stat} requires prioritized supervision.",
-                "recommendation": "Activate closed-loop verbal clinician notification protocol per Joint Commission standards.",
+                "title": "Demonstration Secondary Metric / Flag Triggered",
+                "finding": f"Kinetic parameter ({value:.2f}) with STAT={is_stat} matches a demonstration escalation rule.",
+                "recommendation": "No clinical action is implied by this demonstration threshold.",
             }
         return None
 
@@ -38,8 +38,8 @@ class ClinicalDomainEngine:
         status_upper = str(status_flag).upper()
         if "DISCORDANT" in status_upper or "EQUIVOCAL" in status_upper or "MUTANT" in status_upper:
             return {
-                "title": "Phenotypic / Biomarker Discordance Identified",
-                "finding": f"Status flag '{status_flag}' indicates divergence from standard diagnostic concordance.",
-                "recommendation": f"Order reflex confirmatory testing per ISHLT / AST Immunosuppression TDM Standards clinical recommendations.",
+                "title": "Demonstration Status Keyword Detected",
+                "finding": f"Status flag '{status_flag}' matches a configured status keyword.",
+                "recommendation": f"Interpret using a validated clinical protocol; no testing recommendation is generated.",
             }
         return None
