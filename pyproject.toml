@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "immunosuppression-trough-engine"
 version = "2.0.0"
-description = "TransplantTDM Sentinel: Tacrolimus, Cyclosporine & Everolimus Trough Engine"
+description = "Prototype rule demonstration for transplant therapeutic drug monitoring research"
 readme = "README.md"
 authors = [{ name = "Dr. Abu Suraih Sakhri", email = "abusuraih@example.com" }]
 license = { text = "MIT" }

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 TransplantTDM Sentinel: Tacrolimus, Cyclosporine & Everolimus Trough Agent
-Maintains target whole-blood immunosuppressant trough windows (ng/mL) post-transplant, auditing CYP3A5 genotypes and drug interactions.
+Demonstrates generic thresholds on unitless metrics; does not calculate drug-specific targets or doses.
 
 Domain: Transplant Medicine
 Author: Dr. Abu Suraih Sakhri
@@ -12,6 +12,7 @@ import argparse
 import csv
 import datetime
 import json
+import math
 import sys
 import uuid
 from typing import Dict, Any, List, Optional
@@ -89,7 +90,7 @@ class TroughTargetWindowAuditorAgent:
                     agent_name="TroughTargetWindowAuditorAgent",
                     severity=Severity.WARNING,
                     title="Primary Metric Threshold Discrepancy",
-                    details=f"Primary metric value ({val1:.1f}) exceeded standard clinical baseline.",
+                    details=f"Primary metric value ({val1:.1f}) exceeded the demonstration threshold.",
                     recommendation="Perform secondary cross-check and review calibration profile.",
                 )
             )
@@ -110,7 +111,7 @@ class CYP3A5GenotypeModifierAgent:
                     severity=Severity.CRITICAL,
                     title="Urgent Consensus Protocol Trigger",
                     details=f"Secondary parameter index ({val2:.1f}) triggered automated supervisory escalation.",
-                    recommendation="Initiate mandatory closed-loop clinical notification protocol.",
+                    recommendation="No clinical action is implied by this demonstration threshold.",
                 )
             )
         return alerts
@@ -144,6 +145,10 @@ class TransplantTDMCoordinator:
         self.case_registry: Dict[str, Dict[str, Any]] = {}
 
     def audit_case(self, case_payload: Dict[str, Any]) -> Dict[str, Any]:
+        for key, default in (("metric_primary", 15.0), ("metric_secondary", 5.0)):
+            number = float(case_payload.get(key, default))
+            if not math.isfinite(number) or number < 0:
+                raise ValueError(f"{key} must be finite and non-negative")
         case_id = str(case_payload.get("case_id", f"CASE-{uuid.uuid4().hex[:6].upper()}"))
         all_alerts: List[AgentAlert] = []
 
