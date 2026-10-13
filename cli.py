@@ -14,6 +14,18 @@ from agents.base import AuditLogger
 supervisor = SystemSupervisor(model_provider="mock")
 
 
+def _parse_bool(value):
+    """Parse CSV boolean values without treating nonempty 'False' as true."""
+    if isinstance(value, bool):
+        return value
+    token = str(value if value is not None else "").strip().lower()
+    if token in ("1", "true", "yes", "y"):
+        return True
+    if token in ("0", "false", "no", "n", ""):
+        return False
+    raise ValueError(f"Invalid boolean value: {value!r}")
+
+
 def _validate_file_path(path: str, must_exist: bool = False) -> str:
     """Validate file path for safety - prevents path traversal attacks."""
     # Normalize the path
@@ -82,7 +94,7 @@ def main(argv=None):
             return 1
         print("=" * 80)
         print(f"  IMMUNOSUPPRESSION TROUGH AGENT")
-        print(f"  Domain: Clinical Pharmacology & Pharmacogenomics | Standard: CPIC Level A / FDA Guidance / ISMP Safety Standards")
+        print(f"  Domain: Clinical Pharmacology & Pharmacogenomics | Mode: demonstration thresholds (not validated treatment guidance)")
         print(f"  Dossier ID: {dossier.dossier_id} | Urgency: [{dossier.overall_urgency.value}]")
         print("=" * 80)
         for a in dossier.alerts:
@@ -122,7 +134,7 @@ def main(argv=None):
             print(f"Error reading CSV file: {e}", file=sys.stderr)
             return 1
 
-        out_fields = fieldnames + ["overall_urgency", "integrity_status", "total_alerts", "audit_hash"]
+        out_fields = list(dict.fromkeys(fieldnames + ["overall_urgency", "integrity_status", "total_alerts", "audit_hash"]))
         out_rows = []
         for r in rows:
             try:
@@ -132,7 +144,7 @@ def main(argv=None):
                     primary_metric=float(r.get("primary_metric", 15.0)),
                     secondary_metric=float(r.get("secondary_metric", 5.0)),
                     status_descriptor=r.get("status_descriptor", "NOMINAL"),
-                    is_critical_flag=bool(r.get("is_critical_flag", False)),
+                    is_critical_flag=_parse_bool(r.get("is_critical_flag", False)),
                 )
                 dossier = supervisor.process_task(payload)
                 row_dict = dict(r)

@@ -17,6 +17,18 @@ import uuid
 from typing import Dict, Any, List, Optional
 
 
+def parse_boolean(value):
+    """Read boolean flags from JSON or CSV without coercing 'False' to True."""
+    if isinstance(value, bool):
+        return value
+    token = str(value if value is not None else "").strip().lower()
+    if token in ("1", "true", "yes", "y"):
+        return True
+    if token in ("0", "false", "no", "n", ""):
+        return False
+    raise ValueError(f"Invalid boolean value: {value!r}")
+
+
 class Severity(str):
     INFO = "INFO"
     ADVISORY = "ADVISORY"
@@ -88,7 +100,7 @@ class CYP3A5GenotypeModifierAgent:
     """Specialized Sub-Agent 2 for immunosuppression-trough-agent"""
     def evaluate(self, payload: Dict[str, Any]) -> List[AgentAlert]:
         alerts = []
-        is_critical = bool(payload.get("critical_flag", False))
+        is_critical = parse_boolean(payload.get("critical_flag", False))
         val2 = float(payload.get("metric_secondary", 5.0))
         if is_critical or val2 > 12.0:
             alerts.append(
@@ -142,7 +154,7 @@ class TransplantTDMCoordinator:
         critical_count = sum(1 for a in all_alerts if a.severity == Severity.CRITICAL)
         warning_count = sum(1 for a in all_alerts if a.severity == Severity.WARNING)
 
-        overall_status = "CRITICAL_ACTION_REQUIRED" if critical_count > 0 else ("WARNING_ACTIVE" if warning_count > 0 else "CONCORDANT_NORMAL")
+        overall_status = "CRITICAL_ACTION_REQUIRED" if critical_count > 0 else ("WARNING_ACTIVE" if warning_count > 0 else "ADVISORY_ACTIVE" if all_alerts else "CONCORDANT_NORMAL")
 
         dossier = {
             "system": "immunosuppression-trough-agent",
@@ -165,7 +177,7 @@ class TransplantTDMCoordinator:
         if "summary" in q or "status" in q:
             return f"TransplantTDM Sentinel: Tacrolimus, Cyclosporine & Everolimus Trough Agent currently tracking {len(self.case_registry)} cases in local air-gapped memory."
         elif "guidelines" in q or "protocol" in q:
-            return "All sub-agents operate under validated consensus clinical algorithms and CAP/CLSI/NCCN/WHO standards."
+            return "This prototype uses demonstration thresholds, not validated medication-specific therapeutic ranges."
         else:
             return f"TransplantTDM Sentinel: Tacrolimus, Cyclosporine & Everolimus Trough Agent executive agent online. Continuous supervisory monitoring active across all domain parameters."
 
