@@ -35,6 +35,9 @@ jobs:
         python -m compileall -q agents immunosuppression_trough_agent cli.py transplant_tdm.py
         immunosuppression-trough-agent audit --task-id CI-001 --primary 1 --secondary 1
 
+    - name: Browser module regression tests
+      run: node --test web/app.test.mjs
+
     - name: Security integrity regression check
       run: |
         python -c "
