@@ -54,3 +54,12 @@ def test_transplant_csv_bool():
     assert parse_boolean("TRUE") is True
     with pytest.raises(ValueError):
         parse_boolean("perhaps")
+
+def test_transplant_legacy_aliases():
+    from transplant_tdm import TransplantTDMCoordinator
+    out = TransplantTDMCoordinator().audit_case({
+        "metric_primary": 1, "metric_secondary": 1,
+        "is_stat": "False", "status_flag": "DISCORDANT",
+    })
+    assert out["critical_count"] == 0
+    assert out["total_alerts"] == 1

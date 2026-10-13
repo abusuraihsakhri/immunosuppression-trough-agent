@@ -101,7 +101,7 @@ class CYP3A5GenotypeModifierAgent:
     """Specialized Sub-Agent 2 for immunosuppression-trough-agent"""
     def evaluate(self, payload: Dict[str, Any]) -> List[AgentAlert]:
         alerts = []
-        is_critical = parse_boolean(payload.get("critical_flag", False))
+        is_critical = parse_boolean(payload.get("critical_flag", payload.get("is_stat", False)))
         val2 = float(payload.get("metric_secondary", 5.0))
         if is_critical or val2 > 12.0:
             alerts.append(
@@ -121,7 +121,7 @@ class DoseTitrationCalculatorAgent:
     """Specialized Sub-Agent 3 for immunosuppression-trough-agent"""
     def evaluate(self, payload: Dict[str, Any]) -> List[AgentAlert]:
         alerts = []
-        status_text = str(payload.get("status_text", "NORMAL")).upper()
+        status_text = str(payload.get("status_text", payload.get("status_flag", "NORMAL"))).upper()
         if "DISCORDANT" in status_text or "SUSPICIOUS" in status_text:
             alerts.append(
                 AgentAlert(

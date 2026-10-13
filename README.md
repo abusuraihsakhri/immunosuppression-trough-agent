@@ -6,7 +6,7 @@ Prototype rule-evaluation tools for exploring immunosuppression trough-monitorin
 
 ## Browser demonstration
 
-The static demo is at [`web/index.html`](web/index.html). Open it directly in a modern browser, or serve this repository as a static site. The root `index.html` redirects to `web/` for static hosting and GitHub Pages.
+The static demo is at [`web/index.html`](web/index.html). Serve the repository with `python -m http.server 8000` and open `http://127.0.0.1:8000/`, or host it on a static web server. (Browsers commonly block ES module imports on direct `file://` pages.) The root `index.html` redirects to `web/` for static hosting and GitHub Pages.
 
 The browser module:
 - evaluates synthetic, unitless demonstration inputs locally using the generic workers' rules;
