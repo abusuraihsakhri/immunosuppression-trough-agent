@@ -39,9 +39,9 @@ def test_nonfinite_and_negative_metrics_rejected():
 def test_csv_false_is_not_true(tmp_path):
     source = tmp_path / "input.csv"
     output = tmp_path / "output.csv"
-    source.write_text("task_id,target_identifier,primary_metric,secondary_metric,status_descriptor,is_critical_flag\\n"
-                      "DEMO1,SYNTH1,1,1,NOMINAL,False\\n"
-                      "DEMO2,SYNTH2,1,1,NOMINAL,True\\n", encoding="utf-8")
+    source.write_text("task_id,target_identifier,primary_metric,secondary_metric,status_descriptor,is_critical_flag\n"
+                      "DEMO1,SYNTH1,1,1,NOMINAL,False\n"
+                      "DEMO2,SYNTH2,1,1,NOMINAL,True\n", encoding="utf-8")
     assert generic_main(["batch", "-i", str(source), "-o", str(output)]) == 0
     with output.open(newline="", encoding="utf-8") as handle:
         rows = list(csv.DictReader(handle))

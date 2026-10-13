@@ -1,253 +1,88 @@
 # Immunosuppression Trough Agent
 
-> **Domain:** Clinical Pharmacology & Precision Pharmacotherapy
-> **Reference Guidelines & Standards:** CPIC Guidelines & FDA Table of Pharmacogenomic Biomarkers
+Prototype rule-evaluation tools for exploring immunosuppression trough-monitoring software. The source contains several related Python entry points, a generic multi-worker evaluator, and a static browser demonstration.
 
-<div align="center">
+**Clinical limitation:** This is **not** a validated therapeutic drug monitoring, genotype-guided dosing, or medication titration engine. Its fixed generic demonstration thresholds (primary metric >25 and secondary metric >12 in the generic worker system, with other prototype thresholds in the transplant modules) are **not** tacrolimus, cyclosporine, or everolimus reference ranges. Drug, indication, transplant type, post-transplant interval, specimen timing, units, interactions, and patient context are not modeled appropriately for clinical use. **Do not enter patient records or use outputs for treatment decisions.**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB.svg?logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688.svg?logo=fastapi&logoColor=white)
-![Audit Trail](https://img.shields.io/badge/Audit-HMAC--SHA256_Tamper--Evident-brightgreen.svg)
-![Zero-PHI Guard](https://img.shields.io/badge/Guard-Zero--PHI_Outbound-blue.svg)
-![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)
+## Browser demonstration
 
-</div>
+The static demo is at [`web/index.html`](web/index.html). Open it directly in a modern browser, or serve this repository as a static site. The root `index.html` redirects to `web/` for static hosting and GitHub Pages.
 
----
+The browser module:
+- evaluates synthetic, unitless demonstration inputs locally using the generic workers' rules;
+- distinguishes routine, elevated, and manually critical scenarios;
+- validates numeric fields and synthetic identifiers;
+- exports the demonstration dossier as JSON.
 
-## 📖 What It Does
+No Pyodide or external API is needed: the rules are simple enough to run in JavaScript. The browser page does not transmit inputs to a server or use persistent storage. It does not provide a cryptographic audit trail.
 
-**Immunosuppression Trough Agent** is an advanced analytical and computational platform implementing Post-Transplant Tacrolimus/Cyclosporine Target Trough Titrator. It provides:
+## Installation and CLI
 
-- **Multi-agent consensus evaluation** of immunosuppressant trough levels
-- **PHI outbound protection** with regex-based pattern detection
-- **HMAC-SHA256 tamper-evident audit trail** for all evaluations
-- **FastAPI REST API** for integration with clinical systems
-- **CLI interface** for batch processing and interactive use
-
----
-
-## 🚀 Installation
-
-### Prerequisites
-- Python 3.10, 3.11, or 3.12
-- pip (Python package manager)
-
-### Quick Install
+Requires Python 3.10 or newer. From the repository root:
 
 ```bash
-# Clone the repository
-git clone https://github.com/abusuraihsakhri/immunosuppression-trough-agent.git
-cd immunosuppression-trough-agent
-
-# Create virtual environment (recommended)
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -e .
-pip install fastapi uvicorn pydantic pytest  # Optional: for API and testing
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e ".[api,dev]"
+pytest -q
 ```
 
-### Environment Configuration
+The installed `immunosuppression-trough-agent` command evaluates a generic multi-worker task:
 
 ```bash
-# Copy the example environment file
-cp .env.example .env
-
-# Edit .env and set your configuration
-# IMPORTANT: Generate a strong secret key for production:
-python -c "import secrets; print(secrets.token_hex(32))"
+immunosuppression-trough-agent audit --task-id DEMO-1 --target SPEC-1 --primary 10 --secondary 4 --status NOMINAL
+immunosuppression-trough-agent chat "status"
+immunosuppression-trough-agent verify-audit
+immunosuppression-trough-agent batch -i examples.csv -o results.csv
 ```
 
----
+Batch CSV fields: `task_id,target_identifier,primary_metric,secondary_metric,status_descriptor,is_critical_flag`. Boolean flags accept `true/false`, `yes/no`, and `1/0`. Invalid rows are skipped with a warning.
 
-## ⚙️ Key Capabilities & Algorithmic Modules
+Two additional legacy demonstration entry points are provided and retain different field names and rule sets:
 
-### 🔬 Core Algorithmic & Evaluation Engines
-
-- **`Severity`** — dedicated module for severity evaluation and state verification.
-- **`DomainKnowledgeRegistry`**: Enterprise domain rules, guideline matrices, and evidence benchmarks.
-- **`AgentAlert`** — dedicated module for agent alert evaluation and state verification.
-- **`TroughTargetWindowAuditorAgent`**: Specialized Sub-Agent 1 for immunosuppression-trough-agent
-- **`CYP3A5GenotypeModifierAgent`**: Specialized Sub-Agent 2 for immunosuppression-trough-agent
-- **`DoseTitrationCalculatorAgent`**: Specialized Sub-Agent 3 for immunosuppression-trough-agent
-
-### 🛡️ Security Architecture
-
-- **Zero-PHI Outbound Interceptor:** Active regex inspection blocking SSNs, MRNs, phone numbers, emails, DOBs, and patient identifiers.
-- **Tamper-Evident HMAC-SHA256 Audit Trail:** Chained, cryptographically signed logs for every evaluation and state transition.
-- **Path Traversal Protection:** Input validation prevents directory traversal attacks on file operations.
-- **Configurable Secret Key:** Audit trail secret configurable via `AUDIT_SECRET_KEY` environment variable.
-
----
-
-## 💻 CLI Quickstart & Usage
-
-### 1. Guided Interactive Mode
 ```bash
-python cli.py audit
+immunosuppression-trough-engine audit --primary 10 --secondary 4
+transplant-tdm audit --primary 10 --secondary 4
 ```
 
-### 2. Direct Parameterized Evaluation
-```bash
-python cli.py audit --task-id TASK-001 --target KEY-01 --primary 28.5 --secondary 14.2 --critical --status DISCORDANT
-```
+Neither legacy entry point calculates genotype-specific doses or actual transplant drug target windows. Consult the source modules before adapting the algorithms for research.
 
-### 3. Batch Processing
-```bash
-python cli.py batch -i sample.csv -o results.csv
-```
+## Local API
 
-### 4. Verify Audit Trail Integrity
-```bash
-python cli.py verify-audit
-```
-
-### 5. Chat with Supervisor
-```bash
-python cli.py chat "What is the system status?"
-```
-
-### 6. Launch API Server
 ```bash
 python cli.py serve --host 127.0.0.1 --port 8000
 ```
 
-### Parameter Reference
-| Flag | Description | Default |
-|:-----|:------------|:--------|
-| `--task-id` | Unique task identifier | TASK-2026-001 |
-| `--target` | Target identifier | KEY-TARGET-01 |
-| `--primary` | Primary metric value (float) | 28.5 |
-| `--secondary` | Secondary metric value (float) | 14.2 |
-| `--critical` | Critical flag (boolean) | False |
-| `--status` | Status descriptor | DISCORDANT |
-
-### Input Data Schema (CSV Batch)
-
-| Field | Description | Requirement |
-|:------|:------------|:------------|
-| `task_id` | Unique task identifier | Required |
-| `target_identifier` | Target or specimen identifier | Required |
-| `primary_metric` | Primary measurement value | Required |
-| `secondary_metric` | Secondary measurement value | Required |
-| `status_descriptor` | Status code or phenotype | Required |
-| `is_critical_flag` | Emergency escalation flag | Optional |
-
----
-
-## 🔌 API Endpoints
-
-When running the server (`python cli.py serve`), the following endpoints are available:
-
-| Method | Endpoint | Description |
-|:-------|:---------|:------------|
-| GET | `/health` | Health check |
-| GET | `/metrics` | Prometheus-style metrics |
-| POST | `/api/audit` | Submit task for evaluation |
-| POST | `/api/chat` | Query supervisory chat |
-| GET | `/api/audit/logs` | Get audit trail |
-
-### Example API Usage
+The generic FastAPI service provides `GET /health`, `GET /metrics`, `POST /api/audit`, `POST /api/chat`, and `GET /api/audit/logs`. API schema and interactive documentation are available at `http://127.0.0.1:8000/docs` while running. Sample input:
 
 ```bash
-# Submit audit task
-curl -X POST http://localhost:8000/api/audit \
-  -H "Content-Type: application/json" \
-  -d '{
-    "task_id": "TASK-001",
-    "target_identifier": "SPECIMEN-01",
-    "primary_metric": 28.5,
-    "secondary_metric": 14.2,
-    "status_descriptor": "DISCORDANT",
-    "is_critical_flag": true
-  }'
-
-# Get audit logs
-curl http://localhost:8000/api/audit/logs
+curl -X POST http://127.0.0.1:8000/api/audit \
+  -H 'Content-Type: application/json' \
+  -d '{"task_id":"DEMO-1","target_identifier":"SPEC-1","primary_metric":10,"secondary_metric":4,"status_descriptor":"NOMINAL","is_critical_flag":false}'
 ```
 
----
+The API and Python CLI use an in-memory HMAC-SHA256 audit chain; signatures are checked during integrity verification. Entries are **not persisted** across restarts. Use `AUDIT_SECRET_KEY` to configure a process key, but do not treat this memory-only chain as a durable compliance log.
 
-## 🧪 Testing & Verification
+**Security and privacy:** The API has no authentication and its identifier screening uses incomplete regex-based checks; it is **not HIPAA-certified, PHI-safe, or appropriate for exposed networks**. Keep it bound to localhost or behind a properly secured private gateway. Use synthetic data exclusively. The mock chat provider is deterministic and is not a clinical LLM. The Docker Compose example binds the service to localhost and requires an audit secret.
 
-### Run All Tests
+## Tests and development
+
 ```bash
+python -m pip install -e ".[api,dev]"
 pytest -v
+node --test web/app.test.mjs
+python -m compileall -q agents immunosuppression_trough_agent cli.py transplant_tdm.py
 ```
 
-### Run Security Tests Only
+CI runs Python tests on 3.10–3.12 and the browser module tests. Docker deployment is optional:
+
 ```bash
-pytest tests/test_security.py -v
+export AUDIT_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')"
+docker compose up --build
 ```
 
-### Execute High-Throughput Simulation Benchmark
-```bash
-python simulator.py 1000
-```
+The Python services use Pydantic, FastAPI, and Uvicorn; the browser demo uses standard HTML, CSS, and JavaScript. Modern desktop and mobile browsers with ES modules are supported. This is a research/software demonstration, not a regulated clinical application.
 
----
+## License
 
-## 🐳 Container Deployment
-
-### Docker Build & Run
-```bash
-docker build -t immunosuppression-trough-agent .
-docker run -p 8000:8000 -e AUDIT_SECRET_KEY=your-secret-key immunosuppression-trough-agent
-```
-
-### Docker Compose
-```bash
-# Set your secret key
-export AUDIT_SECRET_KEY=$(python -c "import secrets; print(secrets.token_hex(32))")
-
-# Start the service
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-```
-
----
-
-## 📁 Project Structure
-
-```
-immunosuppression-trough-agent/
-├── agents/                    # Core agent modules
-│   ├── __init__.py
-│   ├── api.py                 # FastAPI REST server
-│   ├── base.py                # Security, PHI guard, audit trail
-│   ├── learning.py            # Bayesian calibration engine
-│   ├── llm_factory.py         # LLM provider factory
-│   ├── metrics.py             # Prometheus metrics
-│   ├── models.py              # Pydantic data models
-│   ├── streamer.py            # WebSocket telemetry
-│   ├── supervisor.py          # Supervisor orchestrator
-│   └── workers.py             # Specialized worker agents
-├── tests/                     # Test suite
-│   ├── test_immunosuppression_trough_agent.py
-│   ├── test_enrichment.py
-│   └── test_security.py       # Security-focused tests
-├── cli.py                     # Main CLI entry point
-├── simulator.py               # High-throughput simulation
-├── enrichment.py              # Enrichment feature modules
-├── transplant_tdm.py          # Transplant TDM module
-├── immunosuppression_trough_agent_app.py
-├── transplant_tdm_app.py
-├── web/                       # Web dashboard
-├── .env.example               # Environment configuration template
-├── .github/workflows/ci.yml   # CI/CD pipeline
-├── Dockerfile
-├── docker-compose.yml
-├── pyproject.toml
-└── README.md
-```
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+[MIT](LICENSE).

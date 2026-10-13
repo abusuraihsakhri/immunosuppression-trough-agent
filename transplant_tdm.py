@@ -182,7 +182,7 @@ class TransplantTDMCoordinator:
         if "summary" in q or "status" in q:
             return f"TransplantTDM Sentinel: Tacrolimus, Cyclosporine & Everolimus Trough Agent currently tracking {len(self.case_registry)} cases in local air-gapped memory."
         elif "guidelines" in q or "protocol" in q:
-            return "This prototype uses demonstration thresholds, not validated medication-specific therapeutic ranges."
+            return "No validated guidelines are implemented: this prototype uses demonstration thresholds, not drug-specific therapeutic ranges."
         else:
             return f"TransplantTDM Sentinel: Tacrolimus, Cyclosporine & Everolimus Trough Agent executive agent online. Continuous supervisory monitoring active across all domain parameters."
 
